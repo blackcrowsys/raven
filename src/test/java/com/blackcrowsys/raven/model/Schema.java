@@ -12,6 +12,11 @@ public class Schema {
     @MapTo(fieldName = "name")
     private String v2;
 
+    @MapTo(fieldName = "amount", using = Converter.class, fromSchemaMethod = "stringToMoney", toSchemaMethod = "moneyToString")
+    private String amount;
+
+    private String valueNotCopied;
+
     public Integer getV1() {
         return v1;
     }
@@ -26,5 +31,21 @@ public class Schema {
 
     public void setV2(String v2) {
         this.v2 = v2;
+    }
+
+    public String getAmount() {
+        return amount;
+    }
+
+    public void setAmount(String amount) {
+        this.amount = amount;
+    }
+
+    public String getValueNotCopied() {
+        return valueNotCopied;
+    }
+
+    public void setValueNotCopied(String valueNotCopied) {
+        this.valueNotCopied = valueNotCopied;
     }
 }
