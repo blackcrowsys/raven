@@ -7,6 +7,8 @@ public class Target {
 
     private String name;
 
+    private Money amount;
+
     public Integer getValue() {
         return value;
     }
@@ -21,5 +23,13 @@ public class Target {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Money getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Money amount) {
+        this.amount = amount;
     }
 }
