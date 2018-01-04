@@ -1,0 +1,18 @@
+language: java
+sudo: false
+install: true
+addons:
+  sonarcloud:
+    organization: "b6u5rejenxudr8yva"
+    token:
+      secure: "03940eb85527a008dcd413d53969fa200d3dba0a"
+jdk:
+  - oraclejdk8
+script:
+  - ./gradlew clean test sonarqube
+cache:
+  directories:
+    - '$HOME/.m2/repository'
+    - '$HOME/.sonar/cache'
+    - '$HOME/.gradle'
+    - '.gradle'
