@@ -30,7 +30,7 @@ public class ClassMapperTests {
 
         target = new Target();
         target.setName("test");
-        target.setValue(Integer.valueOf(103));
+        target.setValue(Integer.valueOf(1200));
         Money money = new Money();
         money.setCurrency("USD");
         money.setValue(2000L);
