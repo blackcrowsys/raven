@@ -9,13 +9,27 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * ClassMapper - Using a schema class, usually the DTO class, it can map between a DTO and business model/entity or any
- * other class.
- * The schema class is defined with the @Mapping annotation that defines the class that this is mapped to using:
- *
- * @Mapping(value = MappedClass)
+ * ClassMapper - a utility class to map from one object to another. For example, from a DTO to an entity and viceversa.
+ * Some definitions are in order:
+ * The mapping class: this is the class containing the mapping definition - in real life, this would normally be a
+ * class such as DTOs or other POJOs used for presentation. This is also called the schema
+ * class.
+ * The mapped class: this is the class that the mapping class maps to - in real life, this would normally be your
+ * model/entity or other classes used in the service/data layer.
  * <p>
- * Each field is mapped using the @MappedTo annotation on the field.
+ * The mapping class is defined with the @Mapping annotation. The @Mapping annotation only has one element: value,
+ * that defines the class that this is mapped to:
+ *
+ * @Mapping(value = Mapped.class)
+ * <p>
+ * Within the mapping class, all fields with the @MappedTo annotation are used for mapping (otherwise it is ignored).
+ * The @MappedTo annotation has the following elements:
+ * fieldName: required - the field name in the mapped class
+ * using: optional - the converer class that can be used to convert from one field to another
+ * fromSchemaMethod: conditional - required if using converter - defines the public static method that converts the
+ * mapping class field to the mapped class field
+ * toSchemaMethod: conditional - required if using converter - defines the public static method that converts the
+ * mapped class field to the mapping class field.
  */
 public class ClassMapper {
 
@@ -24,17 +38,17 @@ public class ClassMapper {
     }
 
     /**
-     * Maps from the DTO to your entity/business model using the schema definition.
+     * Maps from the mapping class to the mapped class.
      *
-     * @param srcObject the schema object, usually the DTO object
-     * @return the taget class
+     * @param schema the mapping object
+     * @return an instance of the mapped object with values set from the mapping object
      * @throws InvalidMappingException when there is a configuration problem
      */
-    public static Object mapFromSchema(Object srcObject) {
+    public static Object mapFromSchema(Object schema) {
         try {
-            Class targetClass = getTargetClass(srcObject);
+            Class targetClass = getTargetClass(schema);
             Object target = targetClass.newInstance();
-            setTargetFields(srcObject, target);
+            setTargetFields(schema, target);
             return target;
         } catch (InstantiationException e) {
             throw new InvalidMappingException("Could not create an instance of the target class");
@@ -43,10 +57,18 @@ public class ClassMapper {
         }
     }
 
-    public static Object mapToSchema(Class clazz, Object o) {
-        Object schema = getSchemaObject(clazz, o);
+    /**
+     * Maps from the mapped class to the mapping class.
+     *
+     * @param clazz  the mapping class that has the mapping definition
+     * @param source the mapped class that will be used to set values in an instance of the mapping class
+     * @return an instance of the mapping class with values set from the mapped class
+     * @throws InvalidMappingException when there is a configuration problem
+     */
+    public static Object mapToSchema(Class clazz, Object source) {
+        Object schema = getSchemaObject(clazz, source);
         Field[] dstFields = schema.getClass().getDeclaredFields();
-        setSchemaFields(o, schema, dstFields);
+        setSchemaFields(source, schema, dstFields);
         return schema;
     }
 
@@ -107,21 +129,6 @@ public class ClassMapper {
         }
     }
 
-    private static boolean usingConverter(MapTo mapTo, boolean fromSchema) {
-        String method = fromSchema ? mapTo.fromSchemaMethod() : mapTo.toSchemaMethod();
-        if (mapTo.using() != Void.class && method.equals("")) {
-            throw new InvalidMappingException("Mapping using converter is not complete for " + mapTo.using().getName());
-        }
-        return mapTo.using() != Void.class;
-    }
-
-    private static boolean checkFieldTypeMatch(Class<? extends Field> source, Class<? extends Field> destination) {
-        if (source == destination) {
-            return true;
-        }
-        throw new InvalidMappingException("Source and destination fields do not match");
-    }
-
     private static void setTargetFields(Object schema, Object target) {
         Field[] schemaFields = getSchemaFields(schema);
         for (Field schemaField : schemaFields) {
@@ -129,7 +136,6 @@ public class ClassMapper {
             setTargetField(schema, target, schemaField, mapTo);
         }
     }
-
 
     @SuppressWarnings("squid:S2589")
     private static void setTargetField(Object schema, Object target, Field field, MapTo mapTo) {
@@ -153,6 +159,21 @@ public class ClassMapper {
                 throw new InvalidMappingException("Could not invoke converter " + mapTo.using().getName());
             }
         }
+    }
+
+    private static boolean usingConverter(MapTo mapTo, boolean fromSchema) {
+        String method = fromSchema ? mapTo.fromSchemaMethod() : mapTo.toSchemaMethod();
+        if (mapTo.using() != Void.class && method.equals("")) {
+            throw new InvalidMappingException("Mapping using converter is not complete for " + mapTo.using().getName());
+        }
+        return mapTo.using() != Void.class;
+    }
+
+    private static boolean checkFieldTypeMatch(Class<? extends Field> source, Class<? extends Field> destination) {
+        if (source == destination) {
+            return true;
+        }
+        throw new InvalidMappingException("Source and destination fields do not match");
     }
 
     private static Field getTargetField(MapTo mapTo, Object target) {
