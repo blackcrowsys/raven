@@ -30,7 +30,7 @@ public class ClassMapperTests {
 
         target = new Target();
         target.setName("test");
-        target.setValue(Integer.valueOf(103));
+        target.setValue(Integer.valueOf(1200));
         Money money = new Money();
         money.setCurrency("USD");
         money.setValue(2000L);
@@ -38,7 +38,7 @@ public class ClassMapperTests {
     }
 
     @Test
-    public void testMappingFromSchemaToEntity() throws InstantiationException, IllegalAccessException, NoSuchFieldException, NoSuchMethodException, InvocationTargetException {
+    public void testMappingFromSchemaToEntity() {
         Target actualTarget = (Target) ClassMapper.mapFromSchema(schema);
 
         assertEquals(schema.getV1(), actualTarget.getValue());
@@ -49,7 +49,7 @@ public class ClassMapperTests {
     }
 
     @Test
-    public void testMappingFromEntityToSchema() throws InstantiationException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException, InvocationTargetException {
+    public void testMappingFromEntityToSchema() {
         Schema actualSchema = (Schema) ClassMapper.mapToSchema(Schema.class, target);
 
         assertNotNull(actualSchema);
