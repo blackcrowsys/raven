@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
  * The mapping class is defined with the @Mapping annotation. The @Mapping annotation only has one element: value,
  * that defines the class that this is mapped to:
  *
- * @Mapping(value = Mapped.class)
+ * To use: @Mapping(value = Mapped.class)
  * <p>
  * Within the mapping class, all fields with the @MappedTo annotation are used for mapping (otherwise it is ignored).
  * The @MappedTo annotation has the following elements:
